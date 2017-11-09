@@ -17,6 +17,7 @@ namespace horizon {
 	ImpBase::ImpBase(const std::string &pool_filename):
 		pool(pool_filename),
 		core(nullptr),
+		zctx(4),
 		sock_broadcast_rx(zctx, ZMQ_SUB),
 		sock_project(zctx, ZMQ_REQ)
 	{
