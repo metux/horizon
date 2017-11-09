@@ -23,7 +23,7 @@ namespace horizon {
 	{
 		auto ep_broadcast = Glib::getenv("HORIZON_EP_BROADCAST");
 		if(ep_broadcast.size()) {
-			sock_broadcast_rx.connect(ep_broadcast);
+			sock_broadcast_rx.connect(ep_broadcast.c_str());
 			{
 				unsigned int prefix = 0;
 				sock_broadcast_rx.setsockopt(ZMQ_SUBSCRIBE, &prefix, 4);
