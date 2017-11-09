@@ -35,12 +35,17 @@ namespace horizon {
 				SOCKET fd = sock_broadcast_rx.getsockopt<SOCKET>(ZMQ_FD);
 				chan = Glib::IOChannel::create_from_win32_socket(fd);
 			#else
-				int fd = sock_broadcast_rx.getsockopt<int>(ZMQ_FD);
+				int fd = -1;
+				size_t retsz1 = 0;
+				sock_broadcast_rx.getsockopt(ZMQ_FD, &fd, &retsz1);
 				chan = Glib::IOChannel::create_from_fd(fd);
 			#endif
 
 			Glib::signal_io().connect([this](Glib::IOCondition cond){
-				while(sock_broadcast_rx.getsockopt<int>(ZMQ_EVENTS) & ZMQ_POLLIN) {
+				uint32_t events = 0;
+				size_t retsz2 = 0;
+				sock_broadcast_rx.getsockopt(ZMQ_EVENTS, &events, &retsz2);
+				while(events & ZMQ_POLLIN) {
 					zmq::message_t msg;
 					sock_broadcast_rx.recv(&msg);
 					int prefix;
@@ -50,14 +55,14 @@ namespace horizon {
 					if(prefix == 0 || prefix==getpid()) {
 						handle_broadcast(j);
 					}
-
+					sock_broadcast_rx.getsockopt(ZMQ_EVENTS, &events, &retsz2);
 				}
 				return true;
 			}, chan, Glib::IO_IN | Glib::IO_HUP);
 		}
 		auto ep_project = Glib::getenv("HORIZON_EP_PROJECT");
 		if(ep_project.size()) {
-			sock_project.connect(ep_project);
+			sock_project.connect(ep_project.c_str());
 		}
 		sockets_connected = ep_project.size() && ep_broadcast.size();
 	}
