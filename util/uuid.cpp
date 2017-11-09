@@ -1,3 +1,6 @@
+
+#include <stdexcept>
+
 #include "uuid.hpp"
 
 namespace horizon {
